@@ -1,0 +1,2 @@
+# vimba4_mfc_hardware_trigger_multiple_photos_acquire_image_loop
+One trigger to get multiple photos.
