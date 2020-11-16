@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ 生成的包含文件。
-// 供 AsynchronousGrab.rc 使用
+// Microsoft Visual C++ generated include file.
+// Used by AsynchronousGrab.rc
 //
 #define IDD_ASYNCHRONOUSGRAB_DIALOG     102
 #define IDR_MAINFRAME                   128
@@ -20,6 +20,7 @@
 #define IDC_BUTTON_ACQUIRE_IMG_AUTO     1015
 #define IDC_CHECK1                      1016
 #define IDC_CHECK_SHOW_IMAGE_EACH_CAPTURE 1016
+#define IDC_BUTTON_OPEN_CAMERA_HW_TRIGGER 1017
 
 // Next default values for new objects
 // 

@@ -65,6 +65,7 @@ BEGIN_MESSAGE_MAP( CAsynchronousGrabDlg, CDialog )
     ON_BN_CLICKED(IDC_BUTTON_SYNC_ACQUIRE_IMG, &CAsynchronousGrabDlg::OnBnClickedButtonSyncAcquireImg)
     ON_BN_CLICKED(IDC_BUTTON_CLOSE_CAM_SYNC, &CAsynchronousGrabDlg::OnBnClickedButtonCloseCamSync)
     ON_BN_CLICKED(IDC_BUTTON_ACQUIRE_IMG_AUTO, &CAsynchronousGrabDlg::OnBnClickedButtonAcquireImgAuto)
+    ON_BN_CLICKED(IDC_BUTTON_OPEN_CAMERA_HW_TRIGGER, &CAsynchronousGrabDlg::OnBnClickedButtonOpenCameraHwTrigger)
 END_MESSAGE_MAP()
 
 BOOL CAsynchronousGrabDlg::OnInitDialog()
@@ -185,6 +186,7 @@ LRESULT CAsynchronousGrabDlg::OnFrameReady( WPARAM status, LPARAM lParam )
 		// The waiting frame is coming now ...
 		m_bWaitingFrame = false;
 
+        bool bResetAquisitionProcess = false;
         // See if it is not corrupt
         if( VmbFrameStatusComplete == status )
         {
@@ -195,6 +197,12 @@ LRESULT CAsynchronousGrabDlg::OnFrameReady( WPARAM status, LPARAM lParam )
             VmbErrorType err = pFrame->GetImage( pBuffer );
 			err = pFrame->GetFrameID(iFrameID);
             Log( _TEXT( "Received image, frame id " ), iFrameID);
+
+            // If we encounter the last frame of 5 frames sequence
+            if (iFrameID % 5 == 4) 
+            {
+                bResetAquisitionProcess = true;
+            }
 
             if( VmbErrorSuccess == err )
             {
@@ -220,6 +228,14 @@ LRESULT CAsynchronousGrabDlg::OnFrameReady( WPARAM status, LPARAM lParam )
 
         // And queue it to continue streaming
         m_ApiController.QueueFrame( pFrame );
+
+        if (bResetAquisitionProcess)
+        {
+            // For Alvium USB3, we should AcquisitionStop, then AcquisitionStart, to restore
+            // MultiFrame trigger mode 
+            Log(_TEXT("Restart aquisition process for Alvium USB3 camera's multiframe trigger process"));
+            m_ApiController.RestartMultiFramesTriggerProcess();
+        }
     }
 
     return 0;
@@ -755,3 +771,57 @@ void CAsynchronousGrabDlg::OnBnClickedButtonAcquireImgAuto()
     }
 
 }
+
+
+void CAsynchronousGrabDlg::OnBnClickedButtonOpenCameraHwTrigger()
+{
+    VmbErrorType err;
+    int nRow = m_ListBoxCameras.GetCurSel();
+
+    if( false == m_bIsStreaming )
+    {
+        if( -1 < nRow )
+        {
+            // Start acquisition in Hardware trigger : 2
+			err = m_ApiController.StartContinuousImageAcquisition(m_cameras[nRow], 2);
+            // Set up image for MFC picture box
+            if (    VmbErrorSuccess == err
+                 && NULL == m_Image )
+            {
+                m_Image.Create(  m_ApiController.GetWidth(),
+                                -m_ApiController.GetHeight(),
+                                NUM_COLORS * BIT_DEPTH );
+                m_ClearBackground = true;
+            }
+            Log( _TEXT( "Starting Acquisition in Hardware trigger mode" ), err );
+            m_bIsStreaming = VmbErrorSuccess == err;
+        }
+        else
+        {
+            Log( _TEXT( "Please select a camera." ) );
+        }
+    }
+    else
+    {
+        m_bIsStreaming = false;
+        // Stop acquisition
+        err = m_ApiController.StopContinuousImageAcquisition();
+        m_ApiController.ClearFrameQueue();
+        if( NULL != m_Image )
+        {
+            m_Image.Destroy();
+        }
+        Log( _TEXT( "Stopping Acquisition in Hardware trigger mode" ), err );
+    }
+
+    if( false == m_bIsStreaming )
+    {
+        //m_ButtonStartStop.SetWindowText( _TEXT( "Start Image Acquisition" ) );
+		m_BtnOpenCamera.EnableWindow(false);
+    }
+    else
+    {
+    }
+
+}
+

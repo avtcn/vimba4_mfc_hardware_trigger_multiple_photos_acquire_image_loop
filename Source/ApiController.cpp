@@ -231,7 +231,9 @@ VmbErrorType ApiController::AcquireSingleImage(FramePtr& rpFrame)
     return res;
 }
 
-
+// 0: default
+// 1: software trigger
+// 2: hardware trigger
 VmbErrorType ApiController::StartContinuousImageAcquisition(const std::string& rStrCameraID, int type) {
     // Open the desired camera by its ID
     VmbErrorType res = m_system.OpenCameraByID(rStrCameraID.c_str(), VmbAccessModeFull, m_pCamera);
@@ -264,7 +266,8 @@ VmbErrorType ApiController::StartContinuousImageAcquisition(const std::string& r
             if (sDeviceFamilyName == "ALVIUM")
             {
                 if (m_pCamera->GetFeatureByName("TriggerActivation", pFeature) == VmbErrorSuccess)
-                    pFeature->SetValue("LevelHigh");
+                    //pFeature->SetValue("LevelHigh");
+                    pFeature->SetValue("FallingEdge");
             }
         }
 
@@ -279,6 +282,33 @@ VmbErrorType ApiController::StartContinuousImageAcquisition(const std::string& r
             SP_ACCESS(m_pCamera)->GetFeatureByName("TriggerMode", pCommandFeature);
             res = pCommandFeature->SetValue("On");
             ASSERT(res == VmbErrorSuccess);
+        }
+        // Hardware Trigger mode
+        else if (type == 2)
+        {
+            SP_ACCESS(m_pCamera)->GetFeatureByName("TriggerSelector", pCommandFeature);
+            res = pCommandFeature->SetValue("AcquisitionStart");
+            ASSERT(res == VmbErrorSuccess);
+            SP_ACCESS(m_pCamera)->GetFeatureByName("TriggerSource", pCommandFeature);
+            //res = pCommandFeature->SetValue("Line1"); // for Manta camera
+            res = pCommandFeature->SetValue("Line0"); // for Alvium USB3 camera
+            ASSERT(res == VmbErrorSuccess);
+
+            // Trigger multiple photos with one trigger for 5 photos
+            SP_ACCESS(m_pCamera)->GetFeatureByName("AcquisitionMode", pCommandFeature);
+            res = pCommandFeature->SetValue("MultiFrame");
+            ASSERT(res == VmbErrorSuccess);
+            SP_ACCESS(m_pCamera)->GetFeatureByName("AcquisitionFrameCount", pCommandFeature);
+            res = pCommandFeature->SetValue(5);
+            ASSERT(res == VmbErrorSuccess);
+
+
+
+            
+            SP_ACCESS(m_pCamera)->GetFeatureByName("TriggerMode", pCommandFeature);
+            res = pCommandFeature->SetValue("On");
+            ASSERT(res == VmbErrorSuccess);
+
         }
 
         // Save the current width
@@ -317,6 +347,44 @@ VmbErrorType ApiController::StartContinuousImageAcquisition(const std::string& r
     }
 
     return res;
+}
+
+void ApiController::RestartMultiFramesTriggerProcess()
+{
+	FeaturePtr pCommandFeature;
+
+    // Stop acquistion, 
+	if (VmbErrorSuccess == m_pCamera->GetFeatureByName("AcquisitionStop", pCommandFeature))
+	{
+		if (VmbErrorSuccess == pCommandFeature->RunCommand())
+		{
+			bool bIsCommandDone = false;
+			do
+			{
+				if (VmbErrorSuccess != pCommandFeature->IsCommandDone(bIsCommandDone))
+				{
+					break;
+				}
+			} while (false == bIsCommandDone);
+		}
+	}
+
+    // Then start acquisition again, for next multiframe trigger process.
+	if (VmbErrorSuccess == m_pCamera->GetFeatureByName("AcquisitionStart", pCommandFeature))
+	{
+		if (VmbErrorSuccess == pCommandFeature->RunCommand())
+		{
+			bool bIsCommandDone = false;
+			do
+			{
+				if (VmbErrorSuccess != pCommandFeature->IsCommandDone(bIsCommandDone))
+				{
+					break;
+				}
+			} while (false == bIsCommandDone);
+		}
+	}
+
 }
 
 

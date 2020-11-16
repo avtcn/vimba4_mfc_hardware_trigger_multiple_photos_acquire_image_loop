@@ -82,6 +82,7 @@ class ApiController
     //  [in]    rStrCameraID    The ID of the camera to open as reported by Vimba
     //  [in]    type			0: Freerun (by default)
 	//							1: Software trigger
+    //                          2: Hardware trigger
     //
     // Returns:
     //  An API status code
@@ -101,6 +102,10 @@ class ApiController
     //  An API status code
     //
     VmbErrorType        StopContinuousImageAcquisition();
+
+
+    // For Alvium USB3, MultiFrame hardware trigger mode
+    void RestartMultiFramesTriggerProcess();
 
     //
     // Trigger photo capture in software trigger mode

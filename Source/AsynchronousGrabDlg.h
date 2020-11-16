@@ -104,6 +104,8 @@ private:
 
     UINT_PTR m_SyncImagingTimer = 0;
 
+    long m_nMultiFrameNum = 5;
+
     //
     // Queries and lists all known camera
     //
@@ -162,5 +164,6 @@ public:
     afx_msg void OnTimer2(UINT_PTR nIDEvent);
 
     afx_msg void OnBnClickedButtonAcquireImgAuto();
+    afx_msg void OnBnClickedButtonOpenCameraHwTrigger();
 };
 
