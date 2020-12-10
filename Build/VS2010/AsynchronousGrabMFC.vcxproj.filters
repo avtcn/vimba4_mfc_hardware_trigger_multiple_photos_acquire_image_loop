@@ -53,12 +53,8 @@
     <ClInclude Include="..\..\Source\FrameObserver.h">
       <Filter>Controller</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Common\ErrorCodeToMessage.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Common\StreamSystemInfo.h">
-      <Filter>Common</Filter>
-    </ClInclude>
+    <ClInclude Include="C:\Users\Public\Documents\Allied Vision\Vimba_4.0\VimbaCPP_Examples\Common\ErrorCodeToMessage.h" />
+    <ClInclude Include="C:\Users\Public\Documents\Allied Vision\Vimba_4.0\VimbaCPP_Examples\Common\StreamSystemInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\stdafx.cpp">

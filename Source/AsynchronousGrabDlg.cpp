@@ -75,6 +75,16 @@ BOOL CAsynchronousGrabDlg::OnInitDialog()
     SetIcon( m_hIcon, TRUE );
     SetIcon( m_hIcon, FALSE );
 
+
+    m_CaptureTimer = 0;
+    m_nClickCount = 0;
+    m_bWaitingFrame = false;
+    m_nErrorCount = 0;
+
+    m_SyncImagingTimer = 0;
+
+    m_nMultiFrameNum = 5;
+
     // Start Vimba
     VmbErrorType err = m_ApiController.StartUp();
     string_type DialogTitle( _TEXT( "AsynchronousGrab (MFC version) Vimba V" ) );
@@ -396,13 +406,13 @@ void CAsynchronousGrabDlg::Log( string_type strMsg, VmbUint64_t iFrameID )
 
 void CAsynchronousGrabDlg::Log(string_type strMsg, long nClickCount, long nErrorCount)
 {
-    strMsg += _TEXT("..., Click: ") + std::to_wstring(nClickCount) + _TEXT(", Error: ") + std::to_wstring(nErrorCount);
+    strMsg += _TEXT("..., Click: ") + std::to_wstring((long long)nClickCount) + _TEXT(", Error: ") + std::to_wstring((long long)nErrorCount);
     m_ListLog.InsertString(0, strMsg.c_str());
 }
 
 void CAsynchronousGrabDlg::Log(string_type strMsg, long nClickCount, long nErrorCount, double fps)
 {
-    strMsg += _TEXT("..., Click: ") + std::to_wstring(nClickCount) + _TEXT(", Error: ") + std::to_wstring(nErrorCount) + _TEXT(", FPS: ") + std::to_wstring(fps);
+    strMsg += _TEXT("..., Click: ") + std::to_wstring((long long)nClickCount) + _TEXT(", Error: ") + std::to_wstring((long long)nErrorCount) + _TEXT(", FPS: ") + std::to_wstring((long long)fps);
     m_ListLog.InsertString(0, strMsg.c_str());
 }
 
@@ -556,7 +566,7 @@ void CAsynchronousGrabDlg::OnBnClickedButtonSwTrigger()
 
 	m_ApiController.TriggerSoftwareCapture();
 	string_type strMsg = _TEXT("Emit software trigger command to camera ...");
-	Log(strMsg + std::to_wstring(m_nClickCount));
+	Log(strMsg + std::to_wstring((long long)m_nClickCount));
 
 	// Increase count
 	m_nClickCount++;

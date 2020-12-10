@@ -97,14 +97,14 @@ private:
     DWORD ticksStart;
     DWORD ticksEnd;
 
-	UINT_PTR m_CaptureTimer = 0;
-	long m_nClickCount = 0;
-	bool m_bWaitingFrame = false;
-    long m_nErrorCount = 0;
+    UINT_PTR m_CaptureTimer;
+    long m_nClickCount;
+    bool m_bWaitingFrame;
+    long m_nErrorCount;
 
-    UINT_PTR m_SyncImagingTimer = 0;
+    UINT_PTR m_SyncImagingTimer;
 
-    long m_nMultiFrameNum = 5;
+    long m_nMultiFrameNum;
 
     //
     // Queries and lists all known camera
